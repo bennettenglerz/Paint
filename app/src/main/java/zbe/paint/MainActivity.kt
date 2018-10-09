@@ -10,8 +10,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Set view
         setContentView(R.layout.main_activity)
 
+        // Set adapter for list of buttons
         listView.adapter = ImageButtonAdapter(this)
     }
 }
