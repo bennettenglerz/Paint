@@ -1,16 +1,21 @@
-package zbe.paint.adapter
+package zbe.paint.view
 
 import android.content.Context
+import android.support.v4.content.res.ResourcesCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
+import zbe.paint.AppState
+import zbe.paint.OnAppStateChangedListener
 import zbe.paint.R
 
 class ImageButtonAdapter(context: Context) : BaseAdapter() {
 
-    val buttons = arrayListOf<ImageButton>()
+    private val buttons = arrayListOf<ImageButton>()
+    var state: AppState = AppState.DEFAULT
+    var onAppStateChangedListener: OnAppStateChangedListener? = null
 
     init {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -34,6 +39,24 @@ class ImageButtonAdapter(context: Context) : BaseAdapter() {
         buttons.add(fillButton)
         buttons.add(colorButton)
         buttons.add(clearButton)
+
+        // Set click listeners
+        (0 until buttons.size).forEach {
+            buttons[it].setOnClickListener { _ ->
+                state = if (state == AppState.values()[it]) { // If it was already selected
+                    buttons[it].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+                    AppState.DEFAULT
+                } else { // If it was not already selected
+                    if (state != AppState.DEFAULT)
+                        buttons[state.ordinal].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+
+                    buttons[it].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
+                    AppState.values()[it]
+                }
+
+                onAppStateChangedListener?.onAppStateChanged()
+            }
+        }
     }
 
     override fun getItem(position: Int): Any = buttons[position]
