@@ -1,20 +1,25 @@
 package zbe.paint.view
 
+import android.app.Activity
 import android.content.Context
+import android.graphics.Color
 import android.support.v4.content.res.ResourcesCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
+import android.widget.Spinner
 import zbe.paint.AppState
+import zbe.paint.DrawState
 import zbe.paint.OnAppStateChangedListener
 import zbe.paint.R
 
-class ImageButtonAdapter(context: Context) : BaseAdapter() {
+class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
 
     private val buttons = arrayListOf<ImageButton>()
-    var state: AppState = AppState.DEFAULT
+    var drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
+        private set
     var onAppStateChangedListener: OnAppStateChangedListener? = null
 
     init {
@@ -43,18 +48,40 @@ class ImageButtonAdapter(context: Context) : BaseAdapter() {
         // Set click listeners
         (0 until buttons.size).forEach {
             buttons[it].setOnClickListener { _ ->
-                state = if (state == AppState.values()[it]) { // If it was already selected
-                    buttons[it].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
-                    AppState.DEFAULT
-                } else { // If it was not already selected
-                    if (state != AppState.DEFAULT)
-                        buttons[state.ordinal].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+                updateButton(it)
 
-                    buttons[it].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
-                    AppState.values()[it]
+                when(drawState.state) {
+                    AppState.PENCIL -> {
+
+                    }
+                    AppState.SIZE -> {
+                        // Open size dropdown
+                        val dropdown = (context as Activity).findViewById<Spinner>(R.id.size_dropdown)
+                        dropdown.visibility = View.VISIBLE
+                        dropdown.performClick()
+                    }
+                    AppState.LINE -> {
+
+                    }
+                    AppState.RECT -> {
+
+                    }
+                    AppState.OVAL -> {
+
+                    }
+                    AppState.FILL -> {
+                        // Open fill dropdown
+                    }
+                    AppState.COLOR -> {
+                        // Open color dropdown
+                    }
+                    AppState.CLEAR -> {
+                        // Open clear dialog
+                    }
+                    else -> {
+                        // Do nothing
+                    }
                 }
-
-                onAppStateChangedListener?.onAppStateChanged()
             }
         }
     }
@@ -66,4 +93,19 @@ class ImageButtonAdapter(context: Context) : BaseAdapter() {
     override fun getCount(): Int = buttons.size
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View = getItem(position) as ImageButton
+
+    private fun updateButton(buttonPosition: Int) {
+        drawState.state = if (drawState.state == AppState.values()[buttonPosition]) { // If buttonPosition was already selected
+            buttons[buttonPosition].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+            AppState.DEFAULT
+        } else { // If buttonPosition was not already selected
+            if (drawState.state != AppState.DEFAULT)
+                buttons[drawState.state.ordinal].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+
+            buttons[buttonPosition].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
+            AppState.values()[buttonPosition]
+        }
+
+        onAppStateChangedListener?.onAppStateChanged()
+    }
 }
