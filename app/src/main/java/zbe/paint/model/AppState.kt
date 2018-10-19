@@ -1,4 +1,4 @@
-package zbe.paint
+package zbe.paint.model
 
 enum class AppState {
     PENCIL, SIZE, LINE, RECT, OVAL, FILL, COLOR, CLEAR, DEFAULT

@@ -10,9 +10,9 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
-import zbe.paint.AppState
-import zbe.paint.DrawState
-import zbe.paint.OnAppStateChangedListener
+import zbe.paint.model.AppState
+import zbe.paint.model.DrawState
+import zbe.paint.model.OnAppStateChangedListener
 import zbe.paint.R
 
 class ImageButtonAdapter(private val context: Context) : BaseAdapter() {

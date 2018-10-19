@@ -4,10 +4,9 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
-import zbe.paint.AppState
-import zbe.paint.DrawState
+import zbe.paint.model.AppState
+import zbe.paint.model.DrawState
 import android.view.MotionEvent
-import android.graphics.Bitmap
 
 
 class CanvasView @JvmOverloads constructor(
@@ -17,99 +16,102 @@ class CanvasView @JvmOverloads constructor(
     // Set defaults
     var drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
 
-    private val mPaint = Paint()
-
-    private var mBitmap: Bitmap? = null
-    private var mCanvas: Canvas? = null
-    private var mPath = Path()
-    private var mBitmapPaint: Paint? = Paint()
-    private var circlePaint = Paint()
-    private var circlePath = Path()
+    private val paint = Paint()
+    private var points = arrayListOf<Pair<Float, Float>>()
+    private var path = Path()
+    private var rect = RectF(0f, 0f, 0f, 0f)
 
     init {
-        mPaint.setAntiAlias(true)
-        mPaint.setDither(true)
-        mPaint.setColor(Color.GREEN)
-        mPaint.setStyle(Paint.Style.STROKE)
-        mPaint.setStrokeJoin(Paint.Join.ROUND)
-        mPaint.setStrokeCap(Paint.Cap.ROUND)
-        mPaint.setStrokeWidth(12f)
-
-        mPath = Path()
-        mBitmapPaint = Paint(Paint.DITHER_FLAG)
-        circlePaint.setAntiAlias(true)
-        circlePaint.setColor(Color.BLUE)
-        circlePaint.setStyle(Paint.Style.STROKE)
-        circlePaint.setStrokeJoin(Paint.Join.MITER)
-        circlePaint.setStrokeWidth(4f)
+        paint.isAntiAlias = true
+        paint.isDither = true
+        paint.color = drawState.color
+        paint.style = Paint.Style.STROKE
+        paint.strokeJoin = Paint.Join.ROUND
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.strokeWidth = drawState.size.toFloat()
     }
 
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh)
-
-        mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        mCanvas = Canvas(mBitmap)
-    }
-
-    override fun onDraw(canvas: Canvas) {
+    override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        canvas.drawBitmap(mBitmap, 0f, 0f, mBitmapPaint)
-        canvas.drawPath(mPath, mPaint)
-        canvas.drawPath(circlePath, circlePaint)
-    }
-
-    private var mX: Float = 0.toFloat()
-    private var mY:Float = 0.toFloat()
-    private val TOUCH_TOLERANCE = 4f
-
-    private fun touch_start(x: Float, y: Float) {
-        mPath.reset()
-        mPath.moveTo(x, y)
-        mX = x
-        mY = y
-    }
-
-    private fun touch_move(x: Float, y: Float) {
-        val dx = Math.abs(x - mX)
-        val dy = Math.abs(y - mY)
-        if (dx >= TOUCH_TOLERANCE || dy >= TOUCH_TOLERANCE) {
-            mPath.quadTo(mX, mY, (x + mX) / 2, (y + mY) / 2)
-            mX = x
-            mY = y
-
-            circlePath.reset()
+        when (drawState.state) {
+            AppState.PENCIL -> {
+                canvas!!.drawPath(path, paint)
+            }
+            AppState.RECT -> {
+                canvas!!.drawRect(rect, paint)
+            }
+            AppState.LINE -> {
+                if (points.size > 1)
+                    canvas!!.drawLine(points[0].first, points[0].second,
+                            points[points.size - 1].first, points[points.size - 1].second, paint)
+            }
+            AppState.OVAL -> {
+                canvas!!.drawOval(rect, paint)
+            }
+            AppState.CLEAR -> clear(canvas)
+            else -> {
+            }
         }
     }
 
-    private fun touch_up() {
-        mPath.lineTo(mX, mY)
-        circlePath.reset()
-        // commit the path to our offscreen
-        mCanvas!!.drawPath(mPath, mPaint)
-        // kill this so we don't double draw
-        mPath.reset()
+    private fun touchDown(x: Float, y: Float) {
+        points = arrayListOf(Pair(x, y))
+    }
+
+    private fun touchMove(x: Float, y: Float) {
+        points.add(Pair(x, y))
+    }
+
+    private fun touchUp(x: Float, y: Float) {
+        when (drawState.state) {
+            AppState.PENCIL -> {
+                // change points to path
+                val iter = points.iterator()
+                var previousPoint = iter.next()
+                path.moveTo(previousPoint.first, previousPoint.second)
+
+                while (iter.hasNext()) {
+                    val point = iter.next()
+                    path.quadTo((previousPoint.first + point.first) / 2, (previousPoint.second + point.second) / 2, point.first, point.second)
+                    previousPoint = point
+                }
+            }
+            AppState.LINE -> {
+                if (points.size > 1)
+                    rect = RectF(points[0].first, points[0].second, x, y)
+            }
+            AppState.RECT -> {
+                if (points.size > 1)
+                    rect = RectF(points[0].first, points[0].second, x, y)
+            }
+            AppState.OVAL -> {
+                if (points.size > 1)
+                    rect = RectF(points[0].first, points[0].second, x, y)
+            }
+            else -> {
+            }
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val x = event.x
-        val y = event.y
-
         when (event.action) {
-            MotionEvent.ACTION_DOWN -> {
-                touch_start(x, y)
-                invalidate()
-            }
-            MotionEvent.ACTION_MOVE -> {
-                touch_move(x, y)
-                invalidate()
-            }
-            MotionEvent.ACTION_UP -> {
-                touch_up()
-                invalidate()
-            }
+            MotionEvent.ACTION_DOWN -> touchDown(event.x, event.y)
+            MotionEvent.ACTION_MOVE -> touchMove(event.x, event.y)
+            MotionEvent.ACTION_UP -> touchUp(event.x, event.y)
         }
+
+        invalidate()
+
         return true
     }
 
+    fun clear(canvas: Canvas?) {
+        points = arrayListOf()
+        path = Path()
+        rect = RectF(0f, 0f, 0f, 0f)
+        drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
+
+        canvas?.drawColor(Color.WHITE)
+    }
 }
