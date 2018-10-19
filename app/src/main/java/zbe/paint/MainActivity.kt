@@ -2,10 +2,12 @@ package zbe.paint
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.constraint.ConstraintLayout
 import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.FrameLayout
 import android.widget.Spinner
 import zbe.paint.view.ImageButtonAdapter
 import kotlinx.android.synthetic.main.canvas_view.*

@@ -79,7 +79,6 @@ class CanvasView @JvmOverloads constructor(
             mY = y
 
             circlePath.reset()
-            circlePath.addCircle(mX, mY, 30f, Path.Direction.CW)
         }
     }
 
