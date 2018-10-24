@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.canvas_view.*
 import kotlinx.android.synthetic.main.list_view.*
 import kotlinx.android.synthetic.main.size_dropdown.*
 import zbe.paint.model.OnAppStateChangedListener
+import zbe.paint.model.Shape
 
 
 class MainActivity : AppCompatActivity() {
@@ -35,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         sizeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         size_dropdown.adapter = sizeAdapter
-        size_dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+        size_dropdown.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 size_dropdown.visibility = View.GONE
             }
@@ -48,6 +49,28 @@ class MainActivity : AppCompatActivity() {
         size_dropdown.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
             if (!hasFocus)
                 v.visibility = View.GONE
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.putParcelableArray(Shape.LINE.toString(), canvasView.shapes.filter { it.value == Shape.LINE }.keys.toTypedArray())
+        outState?.putParcelableArray(Shape.RECT.toString(), canvasView.shapes.filter { it.value == Shape.RECT }.keys.toTypedArray())
+        outState?.putParcelableArray(Shape.OVAL.toString(), canvasView.shapes.filter { it.value == Shape.OVAL }.keys.toTypedArray())
+
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        savedInstanceState?.getParcelableArray(Shape.LINE.toString())?.forEach {
+            canvasView.shapes.put(it, Shape.LINE)
+        }
+        savedInstanceState?.getParcelableArray(Shape.RECT.toString())?.forEach {
+            canvasView.shapes.put(it, Shape.RECT)
+        }
+        savedInstanceState?.getParcelableArray(Shape.OVAL.toString())?.forEach {
+            canvasView.shapes.put(it, Shape.OVAL)
         }
     }
 }

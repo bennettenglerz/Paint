@@ -19,7 +19,7 @@ class CanvasView @JvmOverloads constructor(
     // Set defaults
     var drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
 
-    private val shapes = HashMap<Parcelable, zbe.paint.model.Shape>()
+    val shapes = HashMap<Parcelable, zbe.paint.model.Shape>()
     private val paint = Paint()
 
     private var startX = 0f
