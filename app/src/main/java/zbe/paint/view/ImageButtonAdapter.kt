@@ -26,7 +26,6 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         // Get buttons
-        val pencilButton = inflater.inflate(R.layout.pencil_button, null) as ImageButton
         val sizeButton = inflater.inflate(R.layout.size_button, null) as ImageButton
         val lineButton = inflater.inflate(R.layout.line_button, null) as ImageButton
         val rectButton = inflater.inflate(R.layout.rect_button, null) as ImageButton
@@ -36,7 +35,6 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
         val clearButton = inflater.inflate(R.layout.clear_button, null) as ImageButton
 
         // Add buttons
-        buttons.add(pencilButton)
         buttons.add(sizeButton)
         buttons.add(lineButton)
         buttons.add(rectButton)
@@ -51,9 +49,6 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
                 updateButton(it)
 
                 when(drawState.state) {
-                    AppState.PENCIL -> {
-
-                    }
                     AppState.SIZE -> {
                         // Open size dropdown
                         val dropdown = (context as Activity).findViewById<Spinner>(R.id.size_dropdown)
@@ -71,6 +66,7 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
                     }
                     AppState.FILL -> {
                         // Open fill dropdown
+                        drawState.fill = !drawState.fill
                     }
                     AppState.COLOR -> {
                         // Open color dropdown

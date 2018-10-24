@@ -1,7 +1,10 @@
 package zbe.paint.model
 
 enum class AppState {
-    PENCIL, SIZE, LINE, RECT, OVAL, FILL, COLOR, CLEAR, DEFAULT
+    SIZE, LINE, RECT, OVAL, FILL, COLOR, CLEAR, DEFAULT
+}
+enum class Shape {
+    LINE, RECT, OVAL
 }
 
 data class DrawState(var state: AppState, var size: Int, var color: Int, var fill: Boolean)
@@ -9,3 +12,4 @@ data class DrawState(var state: AppState, var size: Int, var color: Int, var fil
 interface OnAppStateChangedListener {
     fun onAppStateChanged()
 }
+

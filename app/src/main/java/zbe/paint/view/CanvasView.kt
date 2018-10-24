@@ -2,11 +2,14 @@ package zbe.paint.view
 
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.shapes.Shape
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import zbe.paint.model.AppState
 import zbe.paint.model.DrawState
 import android.view.MotionEvent
+import zbe.paint.model.Line
 
 
 class CanvasView @JvmOverloads constructor(
@@ -16,10 +19,13 @@ class CanvasView @JvmOverloads constructor(
     // Set defaults
     var drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
 
+    private val shapes = HashMap<Parcelable, zbe.paint.model.Shape>()
     private val paint = Paint()
-    private var points = arrayListOf<Pair<Float, Float>>()
-    private var path = Path()
-    private var rect = RectF(0f, 0f, 0f, 0f)
+
+    private var startX = 0f
+    private var startY = 0f
+    private var endX = 0f
+    private var endY = 0f
 
     init {
         paint.isAntiAlias = true
@@ -34,60 +40,44 @@ class CanvasView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        when (drawState.state) {
-            AppState.PENCIL -> {
-                canvas!!.drawPath(path, paint)
-            }
-            AppState.RECT -> {
-                canvas!!.drawRect(rect, paint)
-            }
-            AppState.LINE -> {
-                if (points.size > 1)
-                    canvas!!.drawLine(points[0].first, points[0].second,
-                            points[points.size - 1].first, points[points.size - 1].second, paint)
-            }
-            AppState.OVAL -> {
-                canvas!!.drawOval(rect, paint)
-            }
-            AppState.CLEAR -> clear(canvas)
-            else -> {
+        for (shape in shapes) {
+            when (shape.value) {
+                zbe.paint.model.Shape.LINE -> {
+                    val line = shape.key as Line
+                    canvas!!.drawLine(line.startX, line.startY, line.endX, line.endY, paint)
+                }
+                zbe.paint.model.Shape.RECT -> {
+                    val rect = shape.key as RectF
+                    canvas!!.drawRect(rect, paint)
+                }
+                zbe.paint.model.Shape.OVAL -> {
+                    val oval = shape.key as RectF
+                    canvas!!.drawOval(oval, paint)
+                }
             }
         }
     }
 
     private fun touchDown(x: Float, y: Float) {
-        points = arrayListOf(Pair(x, y))
+        startX = x
+        startY = y
     }
 
     private fun touchMove(x: Float, y: Float) {
-        points.add(Pair(x, y))
+        endX = x
+        endY = y
     }
 
-    private fun touchUp(x: Float, y: Float) {
+    private fun touchUp() {
         when (drawState.state) {
-            AppState.PENCIL -> {
-                // change points to path
-                val iter = points.iterator()
-                var previousPoint = iter.next()
-                path.moveTo(previousPoint.first, previousPoint.second)
-
-                while (iter.hasNext()) {
-                    val point = iter.next()
-                    path.quadTo((previousPoint.first + point.first) / 2, (previousPoint.second + point.second) / 2, point.first, point.second)
-                    previousPoint = point
-                }
-            }
             AppState.LINE -> {
-                if (points.size > 1)
-                    rect = RectF(points[0].first, points[0].second, x, y)
+                shapes.put(Line(startX, startY, endX, endY), zbe.paint.model.Shape.LINE)
             }
             AppState.RECT -> {
-                if (points.size > 1)
-                    rect = RectF(points[0].first, points[0].second, x, y)
+                shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.RECT)
             }
             AppState.OVAL -> {
-                if (points.size > 1)
-                    rect = RectF(points[0].first, points[0].second, x, y)
+                shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.OVAL)
             }
             else -> {
             }
@@ -98,7 +88,7 @@ class CanvasView @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> touchDown(event.x, event.y)
             MotionEvent.ACTION_MOVE -> touchMove(event.x, event.y)
-            MotionEvent.ACTION_UP -> touchUp(event.x, event.y)
+            MotionEvent.ACTION_UP -> touchUp()
         }
 
         invalidate()
@@ -107,11 +97,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun clear(canvas: Canvas?) {
-        points = arrayListOf()
-        path = Path()
-        rect = RectF(0f, 0f, 0f, 0f)
-        drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
-
+        shapes.clear()
         canvas?.drawColor(Color.WHITE)
     }
 }
