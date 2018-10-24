@@ -2,13 +2,12 @@ package zbe.paint.view
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.shapes.Shape
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
-import zbe.paint.model.AppState
-import zbe.paint.model.DrawState
+import zbe.paint.model.ButtonState
 import android.view.MotionEvent
+import zbe.paint.model.AppState
 import zbe.paint.model.Line
 
 
@@ -17,9 +16,9 @@ class CanvasView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     // Set defaults
-    var drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
-
     val shapes = HashMap<Parcelable, zbe.paint.model.Shape>()
+    var appState = AppState(shapes, ButtonState.DEFAULT.ordinal, 1, Color.BLACK, true)
+
     private val paint = Paint()
 
     private var startX = 0f
@@ -30,11 +29,11 @@ class CanvasView @JvmOverloads constructor(
     init {
         paint.isAntiAlias = true
         paint.isDither = true
-        paint.color = drawState.color
+        paint.color = appState.color
         paint.style = Paint.Style.STROKE
         paint.strokeJoin = Paint.Join.ROUND
         paint.strokeCap = Paint.Cap.ROUND
-        paint.strokeWidth = drawState.size.toFloat()
+        paint.strokeWidth = appState.size.toFloat()
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -69,14 +68,14 @@ class CanvasView @JvmOverloads constructor(
     }
 
     private fun touchUp() {
-        when (drawState.state) {
-            AppState.LINE -> {
+        when (appState.buttonPressed) {
+            ButtonState.LINE.ordinal -> {
                 shapes.put(Line(startX, startY, endX, endY), zbe.paint.model.Shape.LINE)
             }
-            AppState.RECT -> {
+            ButtonState.RECT.ordinal -> {
                 shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.RECT)
             }
-            AppState.OVAL -> {
+            ButtonState.OVAL.ordinal -> {
                 shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.OVAL)
             }
             else -> {

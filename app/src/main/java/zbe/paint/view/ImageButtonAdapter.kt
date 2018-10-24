@@ -10,15 +10,15 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
-import zbe.paint.model.AppState
-import zbe.paint.model.DrawState
+import zbe.paint.model.ButtonState
 import zbe.paint.model.OnAppStateChangedListener
 import zbe.paint.R
+import zbe.paint.model.AppState
 
 class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
 
     private val buttons = arrayListOf<ImageButton>()
-    var drawState = DrawState(AppState.DEFAULT, 1, Color.BLACK, true)
+    var appState = AppState(emptyMap(), ButtonState.DEFAULT.ordinal, 1, Color.BLACK, true)
         private set
     var onAppStateChangedListener: OnAppStateChangedListener? = null
 
@@ -48,30 +48,30 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
             buttons[it].setOnClickListener { _ ->
                 updateButton(it)
 
-                when(drawState.state) {
-                    AppState.SIZE -> {
+                when(appState.buttonPressed) {
+                    ButtonState.SIZE.ordinal -> {
                         // Open size dropdown
                         val dropdown = (context as Activity).findViewById<Spinner>(R.id.size_dropdown)
                         dropdown.visibility = View.VISIBLE
                         dropdown.performClick()
                     }
-                    AppState.LINE -> {
+                    ButtonState.LINE.ordinal -> {
 
                     }
-                    AppState.RECT -> {
+                    ButtonState.RECT.ordinal -> {
 
                     }
-                    AppState.OVAL -> {
+                    ButtonState.OVAL.ordinal -> {
 
                     }
-                    AppState.FILL -> {
+                    ButtonState.FILL.ordinal -> {
                         // Open fill dropdown
-                        drawState.fill = !drawState.fill
+                        appState.fill = !appState.fill
                     }
-                    AppState.COLOR -> {
+                    ButtonState.COLOR.ordinal -> {
                         // Open color dropdown
                     }
-                    AppState.CLEAR -> {
+                    ButtonState.CLEAR.ordinal -> {
                         // Open clear dialog
                     }
                     else -> {
@@ -91,15 +91,15 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View = getItem(position) as ImageButton
 
     private fun updateButton(buttonPosition: Int) {
-        drawState.state = if (drawState.state == AppState.values()[buttonPosition]) { // If buttonPosition was already selected
+        appState.buttonPressed = if (appState.buttonPressed == ButtonState.values()[buttonPosition].ordinal) { // If buttonPosition was already selected
             buttons[buttonPosition].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
-            AppState.DEFAULT
+            ButtonState.DEFAULT.ordinal
         } else { // If buttonPosition was not already selected
-            if (drawState.state != AppState.DEFAULT)
-                buttons[drawState.state.ordinal].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+            if (appState.buttonPressed != ButtonState.DEFAULT.ordinal)
+                buttons[appState.buttonPressed].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
 
             buttons[buttonPosition].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
-            AppState.values()[buttonPosition]
+            ButtonState.values()[buttonPosition].ordinal
         }
 
         onAppStateChangedListener?.onAppStateChanged()

@@ -1,15 +1,8 @@
 package zbe.paint.model
 
-enum class AppState {
-    SIZE, LINE, RECT, OVAL, FILL, COLOR, CLEAR, DEFAULT
-}
-enum class Shape {
-    LINE, RECT, OVAL
-}
+import android.os.Parcelable
+import java.io.Serializable
 
-data class DrawState(var state: AppState, var size: Int, var color: Int, var fill: Boolean)
-
-interface OnAppStateChangedListener {
-    fun onAppStateChanged()
-}
-
+data class AppState(var shapes: Map<Parcelable, zbe.paint.model.Shape>,
+                      var buttonPressed: Int, var size: Int, var color: Int,
+                      var fill: Boolean): Serializable
