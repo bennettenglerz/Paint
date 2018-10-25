@@ -2,7 +2,6 @@ package zbe.paint.view
 
 import android.content.Context
 import android.graphics.*
-import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
 import android.view.MotionEvent
@@ -43,9 +42,11 @@ class CanvasView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        if (appState.buttonPressed == 6) {
-            clear(canvas)
-            return
+        when (appState.buttonPressed) {
+            6 -> {
+                clear(canvas)
+                return
+            }
         }
 
         for (shape in appState.shapes) {

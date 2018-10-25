@@ -3,6 +3,7 @@ package zbe.paint.view
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.support.v4.app.FragmentActivity
 import android.support.v4.content.res.ResourcesCompat
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,6 +12,9 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
+import me.priyesh.chroma.ChromaDialog
+import me.priyesh.chroma.ColorMode
+import me.priyesh.chroma.ColorSelectListener
 import zbe.paint.model.OnAppStateChangedListener
 import zbe.paint.R
 import zbe.paint.model.AppState
@@ -30,6 +34,17 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
             }
         }
     var onAppStateChangedListener: OnAppStateChangedListener? = null
+    private var colorDialog: ChromaDialog = ChromaDialog.Builder()
+            .initialColor(Color.BLACK)
+            .colorMode(ColorMode.RGB)
+            .onColorSelected(object : ColorSelectListener {
+                override fun onColorSelected(color: Int) {
+                    appState.color = color
+                    onAppStateChangedListener?.onAppStateChanged()
+                    Log.d("SELECTEDCOLOR", color.toString())
+                }
+            })
+            .create()
 
     init {
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -86,13 +101,25 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
         }
 
         colorButton.setOnClickListener {
-            updateButton(buttons.indexOf(colorButton))
+            colorDialog = ChromaDialog.Builder()
+                    .initialColor(appState.color)
+                    .colorMode(ColorMode.RGB)
+                    .onColorSelected(object : ColorSelectListener {
+                        override fun onColorSelected(color: Int) {
+                            appState.color = color
+                            onAppStateChangedListener?.onAppStateChanged()
+                        }
+                    })
+                    .create()
+
+            colorDialog.show((context as FragmentActivity).supportFragmentManager, "ChromaDialog")
         }
 
         clearButton.setOnClickListener {
             if (appState.buttonPressed != -1)
                 buttons[appState.buttonPressed].setBackgroundColor(
                         ResourcesCompat.getColor(context.resources, R.color.gray, null))
+
             appState.buttonPressed = buttons.indexOf(clearButton)
             onAppStateChangedListener?.onAppStateChanged()
         }
