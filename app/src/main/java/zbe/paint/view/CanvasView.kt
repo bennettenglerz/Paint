@@ -5,7 +5,6 @@ import android.graphics.*
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.View
-import zbe.paint.model.ButtonState
 import android.view.MotionEvent
 import zbe.paint.model.AppState
 import zbe.paint.model.Line
@@ -16,8 +15,7 @@ class CanvasView @JvmOverloads constructor(
 ) : View(context, attrs, defStyleAttr) {
 
     // Set defaults
-    val shapes = HashMap<Parcelable, zbe.paint.model.Shape>()
-    var appState = AppState(shapes, ButtonState.DEFAULT.ordinal, 1, Color.BLACK, true)
+    var appState = AppState(HashMap(), -1, 1, Color.BLACK, true)
 
     private val paint = Paint()
 
@@ -39,7 +37,7 @@ class CanvasView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
 
-        for (shape in shapes) {
+        for (shape in appState.shapes) {
             when (shape.value) {
                 zbe.paint.model.Shape.LINE -> {
                     val line = shape.key as Line
@@ -68,16 +66,10 @@ class CanvasView @JvmOverloads constructor(
     }
 
     private fun touchUp() {
-        when (appState.buttonPressed) {
-            ButtonState.LINE.ordinal -> {
-                shapes.put(Line(startX, startY, endX, endY), zbe.paint.model.Shape.LINE)
-            }
-            ButtonState.RECT.ordinal -> {
-                shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.RECT)
-            }
-            ButtonState.OVAL.ordinal -> {
-                shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.OVAL)
-            }
+        when (appState.buttonPressed - 1) {
+            zbe.paint.model.Shape.LINE.ordinal -> appState.shapes.put(Line(startX, startY, endX, endY), zbe.paint.model.Shape.LINE)
+            zbe.paint.model.Shape.RECT.ordinal -> appState.shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.RECT)
+            zbe.paint.model.Shape.OVAL.ordinal -> appState.shapes.put(RectF(startX, startY, endX, endY), zbe.paint.model.Shape.OVAL)
             else -> {
             }
         }
@@ -96,7 +88,7 @@ class CanvasView @JvmOverloads constructor(
     }
 
     fun clear(canvas: Canvas?) {
-        shapes.clear()
+        appState.shapes.clear()
         canvas?.drawColor(Color.WHITE)
     }
 }

@@ -2,6 +2,7 @@ package zbe.paint
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -9,6 +10,7 @@ import zbe.paint.view.ImageButtonAdapter
 import kotlinx.android.synthetic.main.canvas_view.*
 import kotlinx.android.synthetic.main.list_view.*
 import kotlinx.android.synthetic.main.size_dropdown.*
+import zbe.paint.model.AppState
 import zbe.paint.model.OnAppStateChangedListener
 
 
@@ -52,10 +54,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.putSerializable("state", canvasView.appState)
         super.onSaveInstanceState(outState)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
         super.onRestoreInstanceState(savedInstanceState)
+
+        val appState = savedInstanceState?.getSerializable("state") as AppState
+        (listView.adapter as ImageButtonAdapter).appState = appState
+        canvasView.appState = appState
     }
 }

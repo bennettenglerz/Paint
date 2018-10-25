@@ -4,13 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Color
 import android.support.v4.content.res.ResourcesCompat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
-import zbe.paint.model.ButtonState
 import zbe.paint.model.OnAppStateChangedListener
 import zbe.paint.R
 import zbe.paint.model.AppState
@@ -18,8 +18,14 @@ import zbe.paint.model.AppState
 class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
 
     private val buttons = arrayListOf<ImageButton>()
-    var appState = AppState(emptyMap(), ButtonState.DEFAULT.ordinal, 1, Color.BLACK, true)
-        private set
+    var appState = AppState(HashMap(), -1, 1, Color.BLACK, false)
+        set(value) {
+            field = value
+            if (value.buttonPressed != -1) {
+                buttons[value.buttonPressed].setBackgroundColor(
+                        ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
+            }
+        }
     var onAppStateChangedListener: OnAppStateChangedListener? = null
 
     init {
@@ -43,42 +49,40 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
         buttons.add(colorButton)
         buttons.add(clearButton)
 
-        // Set click listeners
-        (0 until buttons.size).forEach {
-            buttons[it].setOnClickListener { _ ->
-                updateButton(it)
+        // Add click listeners
+        sizeButton.setOnClickListener {
+            // Open size dropdown
+            val dropdown = (context as Activity).findViewById<Spinner>(R.id.size_dropdown)
+            dropdown.visibility = View.VISIBLE
+            dropdown.performClick()
 
-                when(appState.buttonPressed) {
-                    ButtonState.SIZE.ordinal -> {
-                        // Open size dropdown
-                        val dropdown = (context as Activity).findViewById<Spinner>(R.id.size_dropdown)
-                        dropdown.visibility = View.VISIBLE
-                        dropdown.performClick()
-                    }
-                    ButtonState.LINE.ordinal -> {
+            updateButton(buttons.indexOf(sizeButton))
+        }
 
-                    }
-                    ButtonState.RECT.ordinal -> {
+        lineButton.setOnClickListener {
+            updateButton(buttons.indexOf(lineButton))
+        }
 
-                    }
-                    ButtonState.OVAL.ordinal -> {
+        rectButton.setOnClickListener {
+            updateButton(buttons.indexOf(rectButton))
+        }
 
-                    }
-                    ButtonState.FILL.ordinal -> {
-                        // Open fill dropdown
-                        appState.fill = !appState.fill
-                    }
-                    ButtonState.COLOR.ordinal -> {
-                        // Open color dropdown
-                    }
-                    ButtonState.CLEAR.ordinal -> {
-                        // Open clear dialog
-                    }
-                    else -> {
-                        // Do nothing
-                    }
-                }
-            }
+        ovalButton.setOnClickListener {
+            updateButton(buttons.indexOf(ovalButton))
+        }
+
+        fillButton.setOnClickListener {
+            appState.fill = !appState.fill
+
+            updateButton(buttons.indexOf(fillButton))
+        }
+
+        colorButton.setOnClickListener {
+            updateButton(buttons.indexOf(colorButton))
+        }
+
+        clearButton.setOnClickListener {
+            updateButton(buttons.indexOf(clearButton))
         }
     }
 
@@ -88,18 +92,23 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
 
     override fun getCount(): Int = buttons.size
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View = getItem(position) as ImageButton
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View =
+            getItem(position) as ImageButton
 
     private fun updateButton(buttonPosition: Int) {
-        appState.buttonPressed = if (appState.buttonPressed == ButtonState.values()[buttonPosition].ordinal) { // If buttonPosition was already selected
-            buttons[buttonPosition].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
-            ButtonState.DEFAULT.ordinal
+        appState.buttonPressed = if (appState.buttonPressed == buttonPosition) {
+            // If buttonPosition was already selected
+            buttons[buttonPosition].setBackgroundColor(
+                    ResourcesCompat.getColor(context.resources, R.color.gray, null))
+            -1
         } else { // If buttonPosition was not already selected
-            if (appState.buttonPressed != ButtonState.DEFAULT.ordinal)
-                buttons[appState.buttonPressed].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.gray, null))
+            if (appState.buttonPressed != -1)
+                buttons[appState.buttonPressed].setBackgroundColor(
+                        ResourcesCompat.getColor(context.resources, R.color.gray, null))
 
-            buttons[buttonPosition].setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
-            ButtonState.values()[buttonPosition].ordinal
+            buttons[buttonPosition].setBackgroundColor(
+                    ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
+            buttonPosition
         }
 
         onAppStateChangedListener?.onAppStateChanged()
