@@ -16,6 +16,12 @@ class CanvasView @JvmOverloads constructor(
 
     // Set defaults
     var appState = AppState(HashMap(), -1, 1, Color.BLACK, true)
+        set(value) {
+            field = value
+            paint.color = value.color
+            paint.style = if (value.fill) Paint.Style.FILL_AND_STROKE else Paint.Style.STROKE
+            paint.strokeWidth = value.size.toFloat()
+        }
 
     private val paint = Paint()
 
@@ -36,6 +42,11 @@ class CanvasView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
+
+        if (appState.buttonPressed == 6) {
+            clear(canvas)
+            return
+        }
 
         for (shape in appState.shapes) {
             when (shape.value) {

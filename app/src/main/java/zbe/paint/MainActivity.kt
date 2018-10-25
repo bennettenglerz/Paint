@@ -27,6 +27,7 @@ class MainActivity : AppCompatActivity() {
         adapter.onAppStateChangedListener = object : OnAppStateChangedListener {
             override fun onAppStateChanged() {
                 canvasView.appState = adapter.appState
+                canvasView.invalidate()
             }
         }
         listView.adapter = adapter

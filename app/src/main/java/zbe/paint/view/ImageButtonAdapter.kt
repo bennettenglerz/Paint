@@ -21,9 +21,12 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
     var appState = AppState(HashMap(), -1, 1, Color.BLACK, false)
         set(value) {
             field = value
-            if (value.buttonPressed != -1) {
+            if (value.buttonPressed in arrayOf(0, 1, 2, 3)) {
                 buttons[value.buttonPressed].setBackgroundColor(
                         ResourcesCompat.getColor(context.resources, R.color.lt_gray, null))
+            }
+            if (value.fill) {
+                buttons[4].setImageResource(R.mipmap.fill)
             }
         }
     var onAppStateChangedListener: OnAppStateChangedListener? = null
@@ -74,7 +77,12 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
         fillButton.setOnClickListener {
             appState.fill = !appState.fill
 
-            updateButton(buttons.indexOf(fillButton))
+            if (appState.fill)
+                fillButton.setImageResource(R.mipmap.fill)
+            else
+                fillButton.setImageResource(R.mipmap.no_fill)
+
+            onAppStateChangedListener?.onAppStateChanged()
         }
 
         colorButton.setOnClickListener {
@@ -82,7 +90,11 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
         }
 
         clearButton.setOnClickListener {
-            updateButton(buttons.indexOf(clearButton))
+            if (appState.buttonPressed != -1)
+                buttons[appState.buttonPressed].setBackgroundColor(
+                        ResourcesCompat.getColor(context.resources, R.color.gray, null))
+            appState.buttonPressed = buttons.indexOf(clearButton)
+            onAppStateChangedListener?.onAppStateChanged()
         }
     }
 
