@@ -10,3 +10,7 @@ data class AppState(var shapes: HashMap<Parcelable, zbe.paint.model.Shape>,
 interface OnAppStateChangedListener {
     fun onAppStateChanged()
 }
+
+interface OnSizeChangedListener {
+    fun onSizeChanged(size: Int)
+}

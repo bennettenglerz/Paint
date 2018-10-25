@@ -3,6 +3,7 @@ package zbe.paint.view
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
+import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentActivity
 import android.support.v4.content.res.ResourcesCompat
 import android.util.Log
@@ -12,12 +13,14 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
 import android.widget.Spinner
+import com.warkiz.tickseekbar.*
 import me.priyesh.chroma.ChromaDialog
 import me.priyesh.chroma.ColorMode
 import me.priyesh.chroma.ColorSelectListener
 import zbe.paint.model.OnAppStateChangedListener
 import zbe.paint.R
 import zbe.paint.model.AppState
+import zbe.paint.model.OnSizeChangedListener
 
 class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
 
@@ -69,12 +72,14 @@ class ImageButtonAdapter(private val context: Context) : BaseAdapter() {
 
         // Add click listeners
         sizeButton.setOnClickListener {
-            // Open size dropdown
-            val dropdown = (context as Activity).findViewById<Spinner>(R.id.size_dropdown)
-            dropdown.visibility = View.VISIBLE
-            dropdown.performClick()
-
-            updateButton(buttons.indexOf(sizeButton))
+            val dialog = SizeDialog().build(context, appState.size)
+            dialog.onSizeChangedListener = object : OnSizeChangedListener {
+                override fun onSizeChanged(size: Int) {
+                    appState.size = size
+                    onAppStateChangedListener?.onAppStateChanged()
+                }
+            }
+            dialog.show((context as FragmentActivity).supportFragmentManager, "SizeDialog")
         }
 
         lineButton.setOnClickListener {
