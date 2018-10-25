@@ -1,5 +1,6 @@
 package zbe.paint
 
+import android.content.res.Configuration
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,8 @@ import kotlinx.android.synthetic.main.list_view.*
 import kotlinx.android.synthetic.main.size_dropdown.*
 import zbe.paint.model.AppState
 import zbe.paint.model.OnAppStateChangedListener
+import android.R.attr.orientation
+import android.widget.Toast
 
 
 class MainActivity : AppCompatActivity() {
@@ -65,5 +68,17 @@ class MainActivity : AppCompatActivity() {
         val appState = savedInstanceState?.getSerializable("state") as AppState
         (listView.adapter as ImageButtonAdapter).appState = appState
         canvasView.appState = appState
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+
+        newConfig ?: return
+
+        val orientation = newConfig.orientation
+        if (orientation == Configuration.ORIENTATION_PORTRAIT)
+            Toast.makeText(this, "Portrait Mode", Toast.LENGTH_SHORT).show()
+        else if (orientation == Configuration.ORIENTATION_LANDSCAPE)
+            Toast.makeText(this, "Landscape Mode", Toast.LENGTH_SHORT).show()
     }
 }
